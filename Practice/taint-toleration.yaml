@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-deployment
+  labels:
+    app: my-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: my-app
+  template:
+    metadata:
+      labels:
+        app: my-app
+    spec:
+      containers:
+      - name: cont-1
+        image: nginx
+        ports:
+        - containerPort: 80
+
+      # deploying the pods on node using selector
+      nodeSelector:
+        env: "demo"
+
+      # taint an tolarations
+      tolerations:
+      - key: "gpu"
+        operator: "Equal"
+        value: "true"
+        effect: "NoSchedule"
+
+
+
+# ----------------Explanation----------------
+# Taints are labels applied to nodes to repel pods, while tolerations are applied to pods to allow them to be scheduled on those tainted nodes.  This mechanism ensures pods are not placed on inappropriate nodes, such as those dedicated to specific hardware like GPUs or reserved for system components. 
+
+# Taints and tolerations function as a filter: a node can have one or more taints, and a pod can have one or more tolerations. A pod is only scheduled on a node if it has a matching toleration for every taint that prevents scheduling. The three primary taint effects define the severity of the restriction:
+
+# NoSchedule: Pods without a matching toleration are prevented from being scheduled on the node. 
+# PreferNoSchedule: The scheduler attempts to avoid placing non-tolerating pods on the node but may do so if no other options exist. 
+# NoExecute: Pods without a matching toleration are evicted from the node if they are already running, and new pods are not scheduled there. 
+
+# ----------------Explanation----------------
+
+
+# to taint the node: kubectl taint node kubernetes-cluster-worker gpu=true:NoSchedule
+
+# to un taint the node: kubectl taint node kubernetes-cluster-worker gpu=true:NoSchedule-
+
+# labelling a node : kubectl label node kubernetes-cluster-worker env=demo
+
+# getting labels of nodes: kubectl get node kubernetes-cluster-worker --show-labels
